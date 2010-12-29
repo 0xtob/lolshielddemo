@@ -58,24 +58,24 @@ inline void scene0(float scene_time) {
   float offset = 3.14/2.0;
 
   for(int i=0;i<14;++i) {
-    int high = (int)((1.0+sin((float)(i+frame)/2))*4);
+    int high = (int)round((1.0+sin((float)(i+frame)/2))*4.5);
     LedSign::Set(i,high,0);
   }
 
   for(int i=0;i<14;++i) {
-    int high = (int)((1.0+sin(offset+(float)(i+frame)/2))*4);
+    int high = (int)round((1.0+sin(offset+(float)(i+frame)/2))*4.5);
     LedSign::Set(i,high,0);
   }
 
   frame++;
 
   for(int i=0;i<14;++i) {
-    int high = (int)((1.0+sin((float)(i+frame)/2))*4);
+    int high = (int)round((1.0+sin((float)(i+frame)/2))*4.5);
     LedSign::Set(i,high,1);
   }
 
   for(int i=0;i<14;++i) {
-    int high = (int)((1.0+sin(offset+(float)(i+frame)/2))*4);
+    int high = (int)round((1.0+sin(offset+(float)(i+frame)/2))*4.5);
     LedSign::Set(i,high,1);
   }
 
