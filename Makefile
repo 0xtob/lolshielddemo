@@ -1,4 +1,7 @@
 # Arduino makefile
+# Original here: http://www.arduino.cc/en/uploads/Hacking/Makefile
+# 
+# Modified to work with current versions of Arduino Uno / ArduinoSDK 0022
 #
 # This makefile allows you to build sketches from the command line
 # without the Arduino environment (or Java).
@@ -19,6 +22,13 @@
 #     the function, with a semi-colon at the end.  For example:
 #     int digitalRead(int pin);
 #
+#   - Append this main function to your source:
+#         http://www.arduino.cc/cgi-bin/yabb2/YaBB.pl?num=1167935232/4#4
+#
+#   - You may also need to add these lines to to your source:
+#         extern "C" void __cxa_pure_virtual(void);
+#         void __cxa_pure_virtual(void) {}
+#
 # Instructions for using the makefile:
 #
 #  1. Copy this file into the folder with your sketch.
@@ -26,30 +36,33 @@
 #  2. Below, modify the line containing "TARGET" to refer to the name of
 #     of your program's file without an extension (e.g. TARGET = foo).
 #
-#  3. Modify the line containg "ARDUINO" to point the directory that
-#     contains the Arduino core (for normal Arduino installations, this
-#     is the lib/targets/arduino sub-directory).
-#
-#  4. Modify the line containing "PORT" to refer to the filename
-#     representing the USB or serial connection to your Arduino board
-#     (e.g. PORT = /dev/tty.USB0).  If the exact name of this file
-#     changes, you can use * as a wildcard (e.g. PORT = /dev/tty.USB*).
-#
-#  5. At the command line, change to the directory containing your
+#  3. At the command line, change to the directory containing your
 #     program's file and the makefile.
 #
-#  6. Type "make" and press enter to compile/verify your program.
+#  4. Type "make" and press enter to compile/verify your program.
 #
-#  7. Type "make upload", reset your Arduino board, and press enter  to
+#  5. Type "make upload", reset your Arduino board, and press enter  to
 #     upload your program to the Arduino board.
 #
 # $Id$
 
+ifeq ($(strip $(PORT)),)
+$(error "Please set PORT in your environment, e.g. export PORT=/dev/ttyACM0")
+endif
+
 PORT = /dev/ttyACM0
 TARGET = lolshielddemo
-ARDUINO = /home/buck/src/lolshield/arduino-0022/hardware/arduino/cores/arduino/
-SRC = $(ARDUINO)/pins_arduino.c $(ARDUINO)/wiring.c $(ARDUINO)/WInterrupts.c
-CXXSRC = $(ARDUINO)/HardwareSerial.cpp $(ARDUINO)/WMath.cpp $(ARDUINO)/Print.cpp $(ARDUINO)/WString.cpp /home/buck/src/lolshield/sketchbook/libraries/LoLShield/Charliplexing.cpp tgl.cpp $(TARGET).cpp
+
+ifeq ($(strip $(LOLLIB)),)
+$(error "Please set LOLLIB in your environment, e.g. export LOLLIB=~/src/sketchbook/libraries/LolShield/")
+endif
+
+ifeq ($(strip $(ARDUINO)),)
+$(error "Please set ARDUINO in your environment, e.g. export ARDUINO=/opt/arduino-0022/")
+endif
+
+SRC = $(ARDUINO)hardware/arduino/cores/arduino/pins_arduino.c $(ARDUINO)hardware/arduino/cores/arduino/wiring.c $(ARDUINO)hardware/arduino/cores/arduino/WInterrupts.c
+CXXSRC = $(ARDUINO)hardware/arduino/cores/arduino/HardwareSerial.cpp $(ARDUINO)hardware/arduino/cores/arduino/WMath.cpp $(ARDUINO)hardware/arduino/cores/arduino/Print.cpp $(ARDUINO)hardware/arduino/cores/arduino/WString.cpp $(LOLLIB)/Charliplexing.cpp tgl.cpp $(TARGET).cpp
 MCU = atmega328p
 F_CPU = 16000000
 FORMAT = ihex
@@ -70,9 +83,9 @@ CDEFS = -DF_CPU=$(F_CPU)
 CXXDEFS = -DF_CPU=$(F_CPU)
 
 # Place -I options here
-INCLUDE = -I/home/buck/src/lolshield/sketchbook/libraries/LoLShield/
-CINCS = -I$(ARDUINO) $(INCLUDE)
-CXXINCS = -I$(ARDUINO) $(INCLUDE)
+INCLUDE = -I$(LOLLIB)
+CINCS = -I$(ARDUINO)hardware/arduino/cores/arduino/ $(INCLUDE)
+CXXINCS = -I$(ARDUINO)hardware/arduino/cores/arduino/ $(INCLUDE)
 
 # Compiler flag to set the C Standard level.
 # c89   - "ANSI" C
@@ -95,7 +108,7 @@ LDFLAGS = -lm
 AVRDUDE_PROGRAMMER = stk500v1
 AVRDUDE_PORT = $(PORT)
 AVRDUDE_WRITE_FLASH = -U flash:w:$(TARGET).hex
-AVRDUDE_FLAGS = -C/home/buck/src/lolshield/arduino-0022/hardware/tools/avrdude.conf -F -p $(MCU) -P $(AVRDUDE_PORT) -c $(AVRDUDE_PROGRAMMER) \
+AVRDUDE_FLAGS = -C$(ARDUINO)hardware/tools/avrdude.conf -F -p $(MCU) -P $(AVRDUDE_PORT) -c $(AVRDUDE_PROGRAMMER) \
   -b $(UPLOAD_RATE) -V
 
 # Program settings
@@ -105,8 +118,7 @@ OBJCOPY = avr-objcopy
 OBJDUMP = avr-objdump
 SIZE = avr-size
 NM = avr-nm
-#AVRDUDE = /home/buck/src/lolshield/arduino-0022/hardware/tools/avrdude
-AVRDUDE = avrdude
+AVRDUDE = $(ARDUINO)hardware/tools/avrdude
 REMOVE = rm -f
 MV = mv -f
 
@@ -124,7 +136,7 @@ ALL_ASFLAGS = -mmcu=$(MCU) -I. -x assembler-with-cpp $(ASFLAGS)
 
 
 # Default target.
-all: build
+all: build 
 
 build: elf hex
 
