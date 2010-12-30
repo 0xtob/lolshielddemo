@@ -3,12 +3,10 @@
 #include "tgl.h"
 #include "settings.h"
 
-int frame = 0;
-int effect = 1;
-int i = 0;
-
 extern "C" void __cxa_pure_virtual(void);
 void __cxa_pure_virtual(void) {}
+
+int frame = 0;
 
 float cube[16][4] =  {
                       {-1, -1, -1},
@@ -42,7 +40,6 @@ void initGL()
 
 void setup()
 {
-//  digitalWrite(13,1);
   LedSign::Init();
   initGL();
 
@@ -87,7 +84,6 @@ inline void scene1(float scene_time)
 {
   tglClear(TGL_COLOR_BUFFER_BIT);  
 
-  //float zoom = 0.5*sin((float)i/10.0);
   float min_zoom = -10;
   float max_zoom = -2.5;
   float zoom = min_zoom + (max_zoom-min_zoom) * (float)scene_time/timeline[scene];
@@ -95,9 +91,6 @@ inline void scene1(float scene_time)
   tglMatrixMode(TGL_MODELVIEW);
   tglLoadIdentity();
   tglTranslatef(0, 0, zoom);
-
-  //tglRotatef(i % 360, 0, 1, 0);
-  //tglRotatef(i % 360, 1, 1, 0);
 
   tglBegin(TGL_LINES);
   for(int p=0; p<8; ++p) {
@@ -116,6 +109,7 @@ inline void scene1(float scene_time)
   delay(50);
 }
 
+// Spinning Cube!
 inline void scene2(float scene_time)
 {
   int i = scene_time / 25;
@@ -150,16 +144,10 @@ inline void scene2(float scene_time)
   tglEnd();
 
   tglSwap();
-
-  //delay(50);
 }
 
 void loop()
 {
-  //LedSign::Set(1,1,1);
-  //delay(100);
-  //return; 
-  
   unsigned int abstime = millis() % timeline_cumsum[N_SCENES-1];
 
   for (int var = 0; var < N_SCENES; ++var) {
@@ -181,6 +169,7 @@ void loop()
   LedSign::Set(2,0,0);
   LedSign::Set(scene,0,1);
 */
+
   switch(scene) {
     case 0: {
       scene0(scene_time);
@@ -198,25 +187,13 @@ void loop()
     }
   }
  
-  /*
-  for(int j=0; j<9; ++j) {
-    for(int i=0; i<14; ++i) {
-      LedSign::Set(i, j, (i+j+(int)(5.0*(1.0+sin((float)frame/5.0))))%5);
-    }
-  }*/
-  //delay(40);
-  
-//  frame++;
 }
 
 int main(void)
 {
-    init();	   // initialize hardware and data structures for runtime library
-
-    setup();	  // call user-defined setup routine
-
-    for (;;)
-	  loop();     // keep calling user-defined loop routine forever
-
-    return 0;	 // we never get here, but make the compiler happy about main returning int
+  init();
+  setup();
+  for (;;)
+    loop();
+  return 0;
 }

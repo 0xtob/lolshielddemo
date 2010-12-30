@@ -2,7 +2,7 @@
  * settings.h
  *
  *  Created on: Dec 29, 2010
- *      Author: tob
+ *      Author: 0xtob
  */
 
 #ifndef SETTINGS_H_

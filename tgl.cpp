@@ -2,25 +2,20 @@
  * tgl.cpp
  *
  *  Created on: Dec 29, 2010
- *      Author: tob
+ *      Author: 0xtob
  */
 
 #include "tgl.h"
-#include <Charliplexing.h>
 #include "settings.h"
+
+#include <Charliplexing.h>
 #include <WProgram.h>
-/*
-MatrixStack stack_modelview;
-MatrixStack stack_projection;
-*/
+
 float m_modelview[16];
 float m_projection[16];
 float m_window[16];
-float m_tmp[16];
 
 int matrix_mode = TGL_MODELVIEW;
-
-int point_size = 1;
 
 int clear_color[] = {0, 0, 0};
 int draw_mode = TGL_POINTS;
@@ -41,8 +36,6 @@ void PxlOnLOL(int x, int y)
 
 void tglInit()
 {
-  //tglUtilStackInit(&stack_modelview);
-  //tglUtilStackInit(&stack_projection);
   tglClearColor(0.0, 0.0, 0.0);
   tglMatrixMode(TGL_PROJECTION);
   tglLoadIdentity();
@@ -78,14 +71,14 @@ void tglLoadIdentity()
 void tglMultMatrixf(float *matrix)
 {
   float *res = tglUtilGetCurrentMatrix();
-  //float m_current[16];
-  for(int i=0; i<16; ++i) m_tmp[i] = res[i];
+  float m_current[16];
+  for(int i=0; i<16; ++i) m_current[i] = res[i];
 
   for(int x=0; x<4; ++x) {
     for(int y=0; y<4; ++y) {
       res[4 * y + x] = 0;
       for(int z=0; z<4; ++z) {
-        res[4 * y + x] += m_tmp[y * 4 + z] * matrix[z * 4 + x];
+        res[4 * y + x] += m_current[y * 4 + z] * matrix[z * 4 + x];
       }
     }
   }
@@ -141,35 +134,7 @@ void tglRotatef(float angle, float x, float y, float z)
 
   tglMultMatrixf(rot_matrix);
 }
-/*
-void tglPushMatrix()
-{
-  switch(matrix_mode)
-  {
-    case TGL_MODELVIEW:
-      tglUtilStackPush(&stack_modelview, m_modelview);
-      break;
 
-    case TGL_PROJECTION:
-      tglUtilStackPush(&stack_projection, m_projection);
-      break;
-  }
-}
-
-void tglPopMatrix()
-{
-  switch(matrix_mode)
-  {
-    case TGL_MODELVIEW:
-      tglUtilStackPop(&stack_modelview, m_modelview);
-      break;
-
-    case TGL_PROJECTION:
-      tglUtilStackPop(&stack_projection, m_projection);
-      break;
-  }
-}
-*/
 void tglBegin(int draw_mode_)
 {
   draw_mode = draw_mode_;
@@ -204,34 +169,23 @@ void tglVertex4fv(float *vec)
   if(drawing == 0)
     return;
 
-  //println("vec: "+vec[0]+" "+vec[1]+" "+vec[2]+" "+vec[3]+" ");
-
   // Modelview Transform
   tglUtilMultMatrixVector(m_modelview, vec, vec);
-
-  //println("model -> "+vec[0]+" "+vec[1]+" "+vec[2]+" "+vec[3]+" ");
 
   // Projection
   tglUtilMultMatrixVector(m_projection, vec, vec);
 
-  //printf("proj -> [%f, %f, %f, %f]\n", vec[0], vec[1], vec[2], vec[3]);
-
   // Map to window coordinates
   tglUtilMultMatrixVector(m_window, vec, vec);
 
-  //printf("win -> [%f, %f, %f, %f]\n", vec[0], vec[1], vec[2], vec[3]);
-
   // Dehomogenize
   tglUtilDehomogenize(vec, vec);
-
-  //printf("dehomo -> [%f, %f, %f, %f]\n", vec[0], vec[1], vec[2], vec[3]);
 
   // Draw
   switch(draw_mode)
   {
     case(TGL_POINTS):
     {
-      //ellipse((int)round(vec[0]), (int)round(vec[1]), point_size, point_size);
       PxlOnLOL(round(vec[0]), round(vec[1]));
       break;
     }
@@ -254,7 +208,6 @@ void tglClear(int bitmask)
   if( (bitmask & TGL_COLOR_BUFFER_BIT) != 0) {
     for(int j=0;j<SCREEN_HEIGHT;++j)
       for(int i=0;i<SCREEN_WIDTH;++i)
-        //LedSign::Set(i,j,0);
         display[i][j] = 0;
   }
 }
@@ -271,7 +224,6 @@ void tglSwap()
   for(int j=0;j<9;++j)
     for(int i=0;i<14;++i)
       LedSign::Set(i,j,display[i][j]);
-  //LedSign::Flip(true);
 }
 
 // ========================= UTILITY FUNCTIONS ====================== //
@@ -305,9 +257,7 @@ void tglUtilPrintMatrix(float *matrix)
 {
   for(int row=0; row<4; ++row) {
     for(int col=0; col<4; ++col) {
-      //printf("%f ", matrix[row * 4 + col]);
     }
-    //printf("\n");
   }
 }
 
@@ -353,31 +303,7 @@ float *tglUtilNormalize3f(float *vec, float *res)
   res[2] = vec[2] / len;
   return res;
 }
-/*
-void tglUtilStackPush(MatrixStack *stack, float *matrix) {
-  if(stack->size == M_STACK_MAX_SIZE)
-    return;
 
-  tglUtilCopyMatrix(stack->m[stack->size], matrix);
-
-  stack->size++;
-}
-
-void tglUtilStackPop(MatrixStack *stack, float *res) {
-  if(stack->size == 0) {
-    res = 0;
-    return;
-  }
-  tglUtilCopyMatrix(res, stack->m[stack->size - 1]);
-
-  stack->size--;
-}
-
-void tglUtilStackInit(MatrixStack *stack)
-{
-    stack->size = 0;
-}
-*/
 void tglUtilDrawBresLine(float *from, float *to)
 {
   int x1 = (int)round(from[0]);
@@ -418,7 +344,6 @@ void tglUtilDrawBresLine(float *from, float *to)
   			yp+=add;
   			d -= 2*dx;
   		}
-  		//printf("x: %d, y: %d\n", xp, yp);
 
   		PxlOnLOL(xp, yp);
 
@@ -460,10 +385,7 @@ void tglUtilDrawBresLine(float *from, float *to)
   			d -= 2*dx;
   		}
 
-  		PxlOnLOL(yp, xp);
-
-
-  		//printf("x: %d, y: %d, d: %d\n", xp, yp, d);
+  		PxlOnLOL(yp, xp); 
   		d += 2*dy;
   	}
   }

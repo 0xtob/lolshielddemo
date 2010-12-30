@@ -2,7 +2,7 @@
  * tgl.h
  *
  *  Created on: Dec 29, 2010
- *      Author: tob
+ *      Author: 0xtob
  */
 
 #ifndef TGL_H_
@@ -11,8 +11,6 @@
 /* Tob's pointless OpenGL library. */
 
 #include <math.h>
-
-#define M_STACK_MAX_SIZE    0 // Max size of the matrix stacks
 
 // Matrix Modes
 #define TGL_MODELVIEW 0
@@ -25,11 +23,6 @@
 
 // Buffer bits
 #define TGL_COLOR_BUFFER_BIT 1
-
-struct MatrixStack {
-    float m[M_STACK_MAX_SIZE][16];
-    int size;
-} ;
 
 // ========================= PUBLIC FUNCTIONS ====================== //
 
@@ -62,11 +55,7 @@ float *tglUtilGetCurrentMatrix();
 void tglUtilSetCurrentMatrix(float *matrix);
 void tglUtilCopyMatrix(float *dest, float* src);
 float *tglUtilNormalize3f(float *vec, float *res);
-void tglUtilStackPush(MatrixStack *stack, float *matrix);
-void tglUtilStackPop(MatrixStack *stack, float *res);
-void tglUtilStackInit(MatrixStack *stack);
 void tglUtilDrawBresLine(float *from, float *to);
 void tglUtilCopyVtx4f(float *dest, float *src);
-
 
 #endif /* TGL_H_ */
