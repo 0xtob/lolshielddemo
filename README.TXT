@@ -5,7 +5,7 @@
 
 
 
-This is a quick poof of concept demo fora lightweight OpenGL library running
+This is a quick poof of concept demo for a lightweight OpenGL library running
 on the Arduino. It was developed using th Arduino IDE version 022 and an
 Arduino Uno.
 
